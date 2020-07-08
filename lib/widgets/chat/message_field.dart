@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -10,11 +11,13 @@ class _MessageFieldState extends State<MessageField> {
   final _messageController = TextEditingController();
   var isEmpty = true;
 
-  void _sendMessage() {
+  void _sendMessage() async {
+    final user = await FirebaseAuth.instance.currentUser();
     Firestore.instance.collection('chat').add(
       {
         'message': _messageController.text,
         'timeStamp': Timestamp.now(),
+        'userId': user.uid,
       },
     );
     _messageController.clear();
@@ -24,11 +27,11 @@ class _MessageFieldState extends State<MessageField> {
   Widget build(BuildContext context) {
     return Container(
       margin: EdgeInsets.only(
-        top: 5,
+        top: 0,
         left: 10,
       ),
       width: double.infinity,
-      height: MediaQuery.of(context).size.height * 0.1,
+      height: MediaQuery.of(context).size.height * 0.085,
       child: Row(
         children: [
           Expanded(
