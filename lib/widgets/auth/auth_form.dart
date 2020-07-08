@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import './custom_button.dart';
+import 'custom_button.dart';
 
 enum AuthMode {
   LogIn,
@@ -8,6 +8,12 @@ enum AuthMode {
 }
 
 class AuthForm extends StatefulWidget {
+  final Future<void> Function(
+          Map<String, String> values, AuthMode currentMode, BuildContext ctx)
+      submitFn;
+
+  AuthForm(this.submitFn);
+
   @override
   _AuthFormState createState() => _AuthFormState();
 }
@@ -29,6 +35,7 @@ class _AuthFormState extends State<AuthForm>
   AnimationController _animationController;
   Animation<double> _fadeAnimation;
   Animation<Offset> _slideAnimation;
+  var isLoading = false;
 
   @override
   void initState() {
@@ -69,13 +76,20 @@ class _AuthFormState extends State<AuthForm>
     }
   }
 
-  void _submit() {
+  void _submit() async {
+    FocusScope.of(context).unfocus();
     var isValidae = _formKey.currentState.validate();
     if (!isValidae) {
       return;
     }
+    setState(() {
+      isLoading = true;
+    });
     _formKey.currentState.save();
-    print(values);
+    await widget.submitFn(values, currentMode, context);
+    setState(() {
+      isLoading = false;
+    });
   }
 
   @override
@@ -128,7 +142,7 @@ class _AuthFormState extends State<AuthForm>
                           : focusNodes['username'],
                     ),
                     onSaved: (val) {
-                      values['email'] = val;
+                      values['email'] = val.trim();
                     },
                   ),
                   SizedBox(
@@ -166,7 +180,7 @@ class _AuthFormState extends State<AuthForm>
                                     FocusScope.of(context)
                                         .requestFocus(focusNodes['password']),
                                 onSaved: (val) {
-                                  values['username'] = val;
+                                  values['username'] = val.trim();
                                 },
                               ),
                       ),
@@ -192,7 +206,7 @@ class _AuthFormState extends State<AuthForm>
                       return null;
                     },
                     onSaved: (val) {
-                      values['password'] = val;
+                      values['password'] = val.trim();
                     },
                     textInputAction: TextInputAction.done,
                   ),
@@ -200,54 +214,66 @@ class _AuthFormState extends State<AuthForm>
                     height: 10,
                   ),
                   LayoutBuilder(
-                    builder: (ctx, constraints) => Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Container(
-                              width: constraints.maxWidth * 0.35,
-                              child: Text(
-                                currentMode == AuthMode.LogIn
-                                    ? 'Haven\'t an account? '
-                                    : 'have an account? ',
-                                softWrap: false,
-                                style: TextStyle(
-                                    fontSize: 12, color: Colors.black),
-                              ),
-                            ),
-                            GestureDetector(
-                                child: Container(
-                                  width: constraints.maxWidth * 0.2,
-                                  padding:
-                                      const EdgeInsets.only(left: 2, right: 15),
-                                  child: Text(
-                                    currentMode == AuthMode.LogIn
-                                        ? 'LogIn'
-                                        : 'SignUp',
-                                    style: TextStyle(
-                                      color: Theme.of(context).primaryColor,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
+                    builder: (ctx, constraints) => isLoading
+                        ? Center(
+                            child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 5),
+                            child: CircularProgressIndicator(),
+                          ))
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Container(
+                                width: constraints.maxWidth * 0.5,
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    Container(
+                                      constraints: BoxConstraints(
+                                          maxWidth: constraints.maxWidth * 0.3),
+                                      child: Text(
+                                        currentMode == AuthMode.LogIn
+                                            ? 'Haven\'t an account? '
+                                            : 'have an account? ',
+                                        softWrap: false,
+                                        style: TextStyle(
+                                            fontSize: 12, color: Colors.black),
+                                      ),
                                     ),
-                                  ),
+                                    GestureDetector(
+                                      child: Container(
+                                        width: constraints.maxWidth * 0.2,
+                                        padding: const EdgeInsets.only(
+                                            left: 2, right: 15),
+                                        child: Text(
+                                          currentMode == AuthMode.LogIn
+                                              ? 'SignUp'
+                                              : 'LogIn',
+                                          style: TextStyle(
+                                            color:
+                                                Theme.of(context).primaryColor,
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                      onTap: _switchAuthMode,
+                                    ),
+                                  ],
                                 ),
-                                onTap: _switchAuthMode),
-                          ],
-                        ),
-                        Expanded(
-                          child: CustomButton(
-                            text: currentMode == AuthMode.LogIn
-                                ? 'LogIn'
-                                : 'SignUp',
-                            icon: Icons.arrow_forward_ios,
-                            onPress: _submit,
+                              ),
+                              Expanded(
+                                child: CustomButton(
+                                  text: currentMode == AuthMode.LogIn
+                                      ? 'LogIn'
+                                      : 'SignUp',
+                                  icon: Icons.arrow_forward_ios,
+                                  onPress: _submit,
+                                ),
+                              )
+                            ],
                           ),
-                        )
-                      ],
-                    ),
                   )
                 ],
               ),
