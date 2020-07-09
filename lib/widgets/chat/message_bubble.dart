@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 
 class MessageBubble extends StatelessWidget {
-  final String _message;
+  final String message;
+  final String userName;
+  final String time;
   final bool sendByMe;
   final Key key;
 
-  MessageBubble(this._message, this.sendByMe, {this.key});
+  MessageBubble(
+      {this.message, this.userName, this.time, this.sendByMe, this.key});
 
   @override
   Widget build(BuildContext context) {
@@ -26,12 +29,39 @@ class MessageBubble extends StatelessWidget {
               bottomRight: Radius.circular(sendByMe ? 0 : 15),
             ),
           ),
-          child: Text(
-            _message,
-            style: TextStyle(
-              color: Theme.of(context).accentTextTheme.headline6.color,
-              fontSize: 18,
-            ),
+          child: Column(
+            crossAxisAlignment:
+                sendByMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+            children: [
+              Text(
+                userName,
+                style: TextStyle(
+                  color: Theme.of(context).accentTextTheme.headline6.color,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
+              SelectableText(
+                message,
+                style: TextStyle(
+                  color: Theme.of(context).accentTextTheme.headline6.color,
+                  fontSize: 18,
+                ),
+                textAlign: sendByMe ? TextAlign.end : TextAlign.start,
+              ),
+              Container(
+                width: double.infinity,
+                alignment:
+                    sendByMe ? Alignment.bottomLeft : Alignment.bottomRight,
+                child: Text(
+                  time,
+                  style: TextStyle(
+                    color: Theme.of(context).accentTextTheme.headline6.color,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ],

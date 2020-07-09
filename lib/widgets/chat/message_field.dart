@@ -13,11 +13,14 @@ class _MessageFieldState extends State<MessageField> {
 
   void _sendMessage() async {
     final user = await FirebaseAuth.instance.currentUser();
+    final userData =
+        await Firestore.instance.collection('users').document(user.uid).get();
     Firestore.instance.collection('chat').add(
       {
         'message': _messageController.text,
         'timeStamp': Timestamp.now(),
         'userId': user.uid,
+        'username': userData['username'],
       },
     );
     _messageController.clear();

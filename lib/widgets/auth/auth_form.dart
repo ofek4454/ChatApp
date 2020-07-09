@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'custom_button.dart';
+import './custom_button.dart';
+import './image_picker.dart';
 
 enum AuthMode {
   LogIn,
@@ -107,7 +108,6 @@ class _AuthFormState extends State<AuthForm>
               key: _formKey,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Text(
                     currentMode == AuthMode.LogIn ? 'LogIn' : 'SignUp',
@@ -116,6 +116,27 @@ class _AuthFormState extends State<AuthForm>
                       color: Theme.of(context).primaryColor,
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  AnimatedContainer(
+                    duration: Duration(
+                      milliseconds: 1000,
+                    ),
+                    curve: Curves.fastOutSlowIn,
+                    constraints: BoxConstraints(
+                        minHeight: currentMode == AuthMode.SingUp ? 60 : 0,
+                        maxHeight: currentMode == AuthMode.SingUp ? 120 : 0),
+                    child: FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: SlideTransition(
+                        position: _slideAnimation,
+                        child: currentMode == AuthMode.LogIn
+                            ? null
+                            : Container(
+                                margin: EdgeInsets.only(top: 10),
+                                child: ImagePickerWidget(),
+                              ),
+                      ),
                     ),
                   ),
                   TextFormField(

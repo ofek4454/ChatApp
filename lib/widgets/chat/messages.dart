@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 
 import './message_bubble.dart';
 
@@ -31,12 +32,17 @@ class Messages extends StatelessWidget {
               if (chatDocs == null || chatDocs.length == 0) {
                 return Container();
               }
+
+              var date =
+                  DateTime.parse(chatDocs[0]['timeStamp'].toDate().toString());
               return ListView.builder(
                 reverse: true,
                 itemCount: chatDocs.length,
                 itemBuilder: (ctx, i) => MessageBubble(
-                  chatDocs[i]['message'],
-                  chatDocs[i]['userId'] == userSnapshot.data.uid,
+                  message: chatDocs[i]['message'],
+                  userName: chatDocs[i]['username'],
+                  time: DateFormat('HH:mm').format(date),
+                  sendByMe: chatDocs[i]['userId'] == userSnapshot.data.uid,
                   key: ValueKey(chatDocs[i].documentID),
                 ),
               );
