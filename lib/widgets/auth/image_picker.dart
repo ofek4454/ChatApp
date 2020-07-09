@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 class ImagePickerWidget extends StatefulWidget {
+  final void Function(File image) getImage;
+  Key key;
+  ImagePickerWidget(this.getImage, {this.key});
   @override
   _ImagePickerWidgetState createState() => _ImagePickerWidgetState();
 }
@@ -24,7 +27,9 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
               label: Text('Camera'),
               onPressed: () async {
                 final _image = await picker.getImage(
-                    source: ImageSource.camera, maxWidth: 600);
+                    source: ImageSource.camera,
+                    maxWidth: 150,
+                    imageQuality: 50);
                 Navigator.of(context).pop(_image);
               },
             ),
@@ -33,7 +38,9 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
               label: Text('Galery'),
               onPressed: () async {
                 final _image = await picker.getImage(
-                    source: ImageSource.gallery, maxWidth: 600);
+                    source: ImageSource.gallery,
+                    maxWidth: 150,
+                    imageQuality: 50);
                 Navigator.of(context).pop(_image);
               },
             ),
@@ -43,6 +50,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
       setState(() {
         _pickedImage = File(image.path);
       });
+      widget.getImage(_pickedImage);
     } catch (error) {
       Scaffold.of(context).showSnackBar(SnackBar(
         content: Text('image isn\'t choosen'),
@@ -66,7 +74,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
               ? Image.file(
                   _pickedImage,
                   fit: BoxFit.cover,
-                  width: double.infinity,
+                  width: _radius,
                 )
               : Container(
                   height: _radius,

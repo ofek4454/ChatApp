@@ -21,6 +21,7 @@ class _MessageFieldState extends State<MessageField> {
         'timeStamp': Timestamp.now(),
         'userId': user.uid,
         'username': userData['username'],
+        'user_image': userData['imageURL'],
       },
     );
     _messageController.clear();

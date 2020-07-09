@@ -33,15 +33,15 @@ class Messages extends StatelessWidget {
                 return Container();
               }
 
-              var date =
-                  DateTime.parse(chatDocs[0]['timeStamp'].toDate().toString());
               return ListView.builder(
                 reverse: true,
                 itemCount: chatDocs.length,
                 itemBuilder: (ctx, i) => MessageBubble(
                   message: chatDocs[i]['message'],
                   userName: chatDocs[i]['username'],
-                  time: DateFormat('HH:mm').format(date),
+                  userImage: chatDocs[i]['user_image'],
+                  time: DateFormat('HH:mm').format(DateTime.parse(
+                      chatDocs[i]['timeStamp'].toDate().toString())),
                   sendByMe: chatDocs[i]['userId'] == userSnapshot.data.uid,
                   key: ValueKey(chatDocs[i].documentID),
                 ),

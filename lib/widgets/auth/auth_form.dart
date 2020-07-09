@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 import './custom_button.dart';
@@ -9,9 +11,8 @@ enum AuthMode {
 }
 
 class AuthForm extends StatefulWidget {
-  final Future<void> Function(
-          Map<String, String> values, AuthMode currentMode, BuildContext ctx)
-      submitFn;
+  final Future<void> Function(Map<String, String> values, File userImage,
+      AuthMode currentMode, BuildContext ctx) submitFn;
 
   AuthForm(this.submitFn);
 
@@ -28,6 +29,7 @@ class _AuthFormState extends State<AuthForm>
     'username': '',
     'password': '',
   };
+  File userImage;
   final Map<String, FocusNode> focusNodes = {
     'email': FocusNode(),
     'username': FocusNode(),
@@ -80,6 +82,13 @@ class _AuthFormState extends State<AuthForm>
   void _submit() async {
     FocusScope.of(context).unfocus();
     var isValidae = _formKey.currentState.validate();
+    if (userImage == null && currentMode == AuthMode.SingUp) {
+      Scaffold.of(context).showSnackBar(SnackBar(
+        content: Text('Please pick an image'),
+        backgroundColor: Theme.of(context).errorColor,
+      ));
+      return;
+    }
     if (!isValidae) {
       return;
     }
@@ -87,10 +96,11 @@ class _AuthFormState extends State<AuthForm>
       isLoading = true;
     });
     _formKey.currentState.save();
-    await widget.submitFn(values, currentMode, context);
-    setState(() {
-      isLoading = false;
-    });
+    await widget.submitFn(values, userImage, currentMode, context);
+  }
+
+  void _pickImage(File image) {
+    userImage = image;
   }
 
   @override
@@ -130,12 +140,14 @@ class _AuthFormState extends State<AuthForm>
                       opacity: _fadeAnimation,
                       child: SlideTransition(
                         position: _slideAnimation,
-                        child: currentMode == AuthMode.LogIn
-                            ? null
-                            : Container(
-                                margin: EdgeInsets.only(top: 10),
-                                child: ImagePickerWidget(),
-                              ),
+                        child: Container(
+                          margin: EdgeInsets.only(top: 10),
+                          child: currentMode == AuthMode.LogIn
+                              ? ImagePickerWidget(_pickImage,
+                                  key: ValueKey('key1'))
+                              : ImagePickerWidget(_pickImage,
+                                  key: ValueKey('key2')),
+                        ),
                       ),
                     ),
                   ),
@@ -182,7 +194,12 @@ class _AuthFormState extends State<AuthForm>
                       child: SlideTransition(
                         position: _slideAnimation,
                         child: currentMode == AuthMode.LogIn
-                            ? null
+                            ? TextFormField(
+                                decoration: InputDecoration(
+                                  labelText: 'Username',
+                                  icon: Icon(Icons.person_outline),
+                                ),
+                              )
                             : TextFormField(
                                 key: ValueKey('userName'),
                                 focusNode: focusNodes['username'],
@@ -190,12 +207,14 @@ class _AuthFormState extends State<AuthForm>
                                   labelText: 'Username',
                                   icon: Icon(Icons.person_outline),
                                 ),
-                                validator: (val) {
-                                  if (val.isEmpty || val.length < 5) {
-                                    return 'username must be at least 5 characters';
-                                  }
-                                  return null;
-                                },
+                                validator: currentMode == AuthMode.LogIn
+                                    ? null
+                                    : (val) {
+                                        if (val.isEmpty || val.length < 5) {
+                                          return 'username must be at least 5 characters';
+                                        }
+                                        return null;
+                                      },
                                 textInputAction: TextInputAction.next,
                                 onFieldSubmitted: (value) =>
                                     FocusScope.of(context)
